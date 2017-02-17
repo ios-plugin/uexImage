@@ -10,6 +10,7 @@
 
 #import "uexImageWidgets.h"
 #import <AssetsLibrary/AssetsLibrary.h>
+#import <AppCanKit/AppCanKit.h>
 
 NSString * const cUexImageCallbackIsCancelledKey    = @"isCancelled";
 NSString * const cUexImageCallbackDataKey           = @"data";
@@ -83,6 +84,151 @@ NSString * const cUexImageCallbackIsSuccessKey      = @"isSuccess";
     }
     [self.picker open];
     
+}
+
+#pragma mark -compressImage(图片压缩)；
+
+-(void)compressImage:(NSMutableArray*)inArguments{
+    
+    
+    // ACArgsUnpack(NSDictionary *info,ACJSFunctionRef *cb) = inArguments;
+    
+    NSString * compressStr = [inArguments objectAtIndex:0];
+    
+    NSDictionary * compressDict = [compressStr ac_JSONValue];
+    
+    NSString * stringFunction;
+    
+    if (inArguments.count>1)
+    {
+        stringFunction  = [inArguments objectAtIndex:1];
+    }
+    
+    
+    
+    NSString * imagePath = [self absPath:[compressDict objectForKey:@"srcPath"]];
+    
+    UIImage * image = [UIImage imageWithContentsOfFile:imagePath];
+    
+    //图像压缩
+    UIImage *images = [self scaleFromImage:image];
+    
+    NSInteger imageLength = [[compressDict objectForKey:@"desLength"] intValue];
+    
+    // 原始数据
+    NSData *imgData = UIImageJPEGRepresentation(images, 1.0);
+    // 原始图片
+    
+    UIImage *result = [UIImage imageWithData:imgData];
+    
+    if  (imgData.length > imageLength) {
+        
+        imgData = UIImageJPEGRepresentation(result,0.5);
+        
+     //   CGFloat dataSize = imgData.length/1024;
+        
+        
+        result = [UIImage imageWithData:imgData];
+        
+    }
+    
+    if(imgData){
+        
+        NSFileManager *fmanager = [NSFileManager defaultManager];
+        
+        NSString *uexImageSaveDir=[self getSaveDirPath];
+        
+        if (![fmanager fileExistsAtPath:uexImageSaveDir]) {
+            
+            [fmanager createDirectoryAtPath:uexImageSaveDir withIntermediateDirectories:YES attributes:nil error:nil];
+        }
+        NSString *timeStr = [NSString stringWithFormat:@"%f",[[NSDate date] timeIntervalSinceReferenceDate]];
+        
+        NSString *imgName = [NSString stringWithFormat:@"%@.jpg",[timeStr substringFromIndex:([timeStr length]-6)]];
+        NSString *imgTmpPath = [uexImageSaveDir stringByAppendingPathComponent:imgName];
+        if ([fmanager fileExistsAtPath:imgTmpPath]) {
+            
+            [fmanager removeItemAtPath:imgTmpPath error:nil];
+        }
+        
+        [imgData writeToFile:imgTmpPath atomically:YES];
+        
+        NSMutableDictionary * dicct = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"OK",@"status",imgTmpPath,@"filePath", nil];
+        
+        if (inArguments.count==1)
+        {
+            [self.webViewEngine callbackWithFunctionKeyPath:@"uexImage.cbCompressImage" arguments:ACArgsPack(dicct.ac_JSONFragment)];
+        }else if(inArguments.count==2){
+            
+            [self.webViewEngine callbackWithFunctionKeyPath:[NSString stringWithFormat:@"uexImage.%@",stringFunction] arguments:ACArgsPack(dicct.ac_JSONFragment)];
+        }
+        
+        //[cb executeWithArguments:ACArgsPack(err,error.localizedDescription)];
+    }
+    
+}
+// 图像压缩
+//==========================
+- (UIImage *)scaleFromImage:(UIImage *)image
+{
+    if (!image)
+    {
+        return nil;
+    }
+    
+    NSData *data =UIImagePNGRepresentation(image);
+    CGFloat dataSize = data.length/1024;
+    CGFloat width  = image.size.width;
+    CGFloat height = image.size.height;
+    CGSize size;
+    
+    if (dataSize<=30)//小于50k
+    {
+        return image;
+    }
+    else if (dataSize<=100)//小于100k
+    {
+        size = CGSizeMake(width/2.f, height/2.f);
+    }
+    else if (dataSize<=200)//小于200k
+    {
+        size = CGSizeMake(width/3.f, height/3.f);
+    }
+    else if (dataSize<=500)//小于500k
+    {
+        size = CGSizeMake(width/3.f, height/3.f);
+    }
+    else if (dataSize<=1000)//小于1M
+    {
+        size = CGSizeMake(width/3.f, height/3.f);
+    }
+    else if (dataSize<=2000)//小于2M
+    {
+        size = CGSizeMake(width/3.f, height/3.f);
+    }
+    else//大于2M
+    {
+        size = CGSizeMake(width/20.f, height/20.f);
+    }
+    UIGraphicsBeginImageContext(size);
+    [image drawInRect:CGRectMake(0,0, size.width, size.height)];
+    UIImage *newImage =UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    if (!newImage)
+    {
+        return image;
+    }
+    return newImage;
+}
+
+
+- (NSString *)getSaveDirPath{
+    
+    NSString *tempPath = [NSHomeDirectory() stringByAppendingPathComponent:@"Documents/apps"];
+    
+    NSString *wgtTempPath=[tempPath stringByAppendingPathComponent:self.webViewEngine.widget.widgetId];
+    
+    return [wgtTempPath stringByAppendingPathComponent:@"uexImage"];
 }
 
 
