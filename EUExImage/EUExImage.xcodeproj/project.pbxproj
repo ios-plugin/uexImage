@@ -20,12 +20,11 @@
 		4220FE851BC60E160026460B /* uexImageBrowser.m in Sources */ = {isa = PBXBuildFile; fileRef = 4220FE841BC60E160026460B /* uexImageBrowser.m */; };
 		4220FE8B1BC676970026460B /* MWPhotoBrowser.bundle in CopyFiles */ = {isa = PBXBuildFile; fileRef = 4220FE821BC60DF40026460B /* MWPhotoBrowser.bundle */; };
 		4220FE8C1BC676A20026460B /* DACircularProgress.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 42EE35B21BBA3BCA00EA11AF /* DACircularProgress.framework */; };
+		4274E4691E555B7D00227401 /* RSKImageCropper.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4274E4681E555B7D00227401 /* RSKImageCropper.framework */; };
 		42B1DAE71BB29EC900549D56 /* EUExImage.m in Sources */ = {isa = PBXBuildFile; fileRef = 42B1DAE61BB29EC900549D56 /* EUExImage.m */; };
 		42EE35B01BBA1A0200EA11AF /* uexImagePicker.m in Sources */ = {isa = PBXBuildFile; fileRef = 42EE35AF1BBA1A0200EA11AF /* uexImagePicker.m */; };
 		42EE35BF1BBA3BCA00EA11AF /* DACircularProgress.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 42EE35B21BBA3BCA00EA11AF /* DACircularProgress.framework */; };
 		42EE35CC1BBA657400EA11AF /* uexImageCropper.m in Sources */ = {isa = PBXBuildFile; fileRef = 42EE35CB1BBA657400EA11AF /* uexImageCropper.m */; };
-		42EF948E1DF948FA0087D468 /* RSKImageCropper.framework in CopyFiles */ = {isa = PBXBuildFile; fileRef = 42F4B0221DF79E1800501D70 /* RSKImageCropper.framework */; };
-		42F4B0231DF79E1800501D70 /* RSKImageCropper.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 42F4B0221DF79E1800501D70 /* RSKImageCropper.framework */; };
 		42F4B03F1DF79F0200501D70 /* MWCaptionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 42F4B02B1DF79F0200501D70 /* MWCaptionView.m */; };
 		42F4B0401DF79F0200501D70 /* MWGridCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 42F4B02E1DF79F0200501D70 /* MWGridCell.m */; };
 		42F4B0411DF79F0200501D70 /* MWGridViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 42F4B0301DF79F0200501D70 /* MWGridViewController.m */; };
@@ -59,7 +58,6 @@
 			dstPath = embed;
 			dstSubfolderSpec = 16;
 			files = (
-				42EF948E1DF948FA0087D468 /* RSKImageCropper.framework in CopyFiles */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -107,6 +105,16 @@
 		4220FE821BC60DF40026460B /* MWPhotoBrowser.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = MWPhotoBrowser.bundle; sourceTree = "<group>"; };
 		4220FE831BC60E160026460B /* uexImageBrowser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uexImageBrowser.h; sourceTree = "<group>"; };
 		4220FE841BC60E160026460B /* uexImageBrowser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = uexImageBrowser.m; sourceTree = "<group>"; };
+		4274E45F1E5553C600227401 /* JSON.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JSON.h; sourceTree = "<group>"; };
+		4274E4601E5553C600227401 /* JSONParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = JSONParser.h; sourceTree = "<group>"; };
+		4274E4611E5553C600227401 /* MD5Digest.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MD5Digest.h; sourceTree = "<group>"; };
+		4274E4621E5553C600227401 /* NSObject+SBJSON.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSObject+SBJSON.h"; sourceTree = "<group>"; };
+		4274E4631E5553C600227401 /* NSString+SBJSON.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "NSString+SBJSON.h"; sourceTree = "<group>"; };
+		4274E4641E5553C600227401 /* SBJSON.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SBJSON.h; sourceTree = "<group>"; };
+		4274E4651E5553C600227401 /* SBJsonBase.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SBJsonBase.h; sourceTree = "<group>"; };
+		4274E4661E5553C600227401 /* SBJsonParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SBJsonParser.h; sourceTree = "<group>"; };
+		4274E4671E5553C600227401 /* SBJsonWriter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SBJsonWriter.h; sourceTree = "<group>"; };
+		4274E4681E555B7D00227401 /* RSKImageCropper.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = RSKImageCropper.framework; sourceTree = "<group>"; };
 		4290C3FB1BB90E73009D5095 /* PrefixHeader.pch */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PrefixHeader.pch; sourceTree = "<group>"; };
 		42B1DAE11BB29EC900549D56 /* libuexImage.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libuexImage.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		42B1DAE41BB29EC900549D56 /* EUExImage.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = EUExImage.h; sourceTree = "<group>"; };
@@ -117,7 +125,6 @@
 		42EE35CA1BBA657400EA11AF /* uexImageCropper.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uexImageCropper.h; sourceTree = "<group>"; };
 		42EE35CB1BBA657400EA11AF /* uexImageCropper.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = uexImageCropper.m; sourceTree = "<group>"; };
 		42EE35CD1BBA6C9400EA11AF /* uexImageWidgets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = uexImageWidgets.h; sourceTree = "<group>"; };
-		42F4B0221DF79E1800501D70 /* RSKImageCropper.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = RSKImageCropper.framework; path = Carthage/Build/iOS/RSKImageCropper.framework; sourceTree = SOURCE_ROOT; };
 		42F4B02A1DF79F0200501D70 /* MWCaptionView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MWCaptionView.h; sourceTree = "<group>"; };
 		42F4B02B1DF79F0200501D70 /* MWCaptionView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MWCaptionView.m; sourceTree = "<group>"; };
 		42F4B02C1DF79F0200501D70 /* MWCommon.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MWCommon.h; sourceTree = "<group>"; };
@@ -159,7 +166,7 @@
 				42EE35BF1BBA3BCA00EA11AF /* DACircularProgress.framework in Frameworks */,
 				42FF2D2C1D127A72003994A5 /* AppCanKit.framework in Frameworks */,
 				0EC5C0701BD0041F00E34E80 /* ReactiveCocoa.framework in Frameworks */,
-				42F4B0231DF79E1800501D70 /* RSKImageCropper.framework in Frameworks */,
+				4274E4691E555B7D00227401 /* RSKImageCropper.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -230,6 +237,22 @@
 			path = SDWebImage;
 			sourceTree = "<group>";
 		};
+		4274E45E1E5553C600227401 /* JSON */ = {
+			isa = PBXGroup;
+			children = (
+				4274E45F1E5553C600227401 /* JSON.h */,
+				4274E4601E5553C600227401 /* JSONParser.h */,
+				4274E4611E5553C600227401 /* MD5Digest.h */,
+				4274E4621E5553C600227401 /* NSObject+SBJSON.h */,
+				4274E4631E5553C600227401 /* NSString+SBJSON.h */,
+				4274E4641E5553C600227401 /* SBJSON.h */,
+				4274E4651E5553C600227401 /* SBJsonBase.h */,
+				4274E4661E5553C600227401 /* SBJsonParser.h */,
+				4274E4671E5553C600227401 /* SBJsonWriter.h */,
+			);
+			path = JSON;
+			sourceTree = "<group>";
+		};
 		42B1DAD81BB29EC900549D56 = {
 			isa = PBXGroup;
 			children = (
@@ -263,6 +286,7 @@
 		42B1DAF31BB29FAC00549D56 /* sourceCode */ = {
 			isa = PBXGroup;
 			children = (
+				4274E45E1E5553C600227401 /* JSON */,
 				0EC11D831BD3ED65008868F4 /* Utilities */,
 				0EC5C05A1BCFF9A300E34E80 /* PhotoPicker */,
 				42EE35B11BBA3BCA00EA11AF /* dependence */,
@@ -280,8 +304,8 @@
 		42EE35B11BBA3BCA00EA11AF /* dependence */ = {
 			isa = PBXGroup;
 			children = (
+				4274E4681E555B7D00227401 /* RSKImageCropper.framework */,
 				42F4B0291DF79F0200501D70 /* MWPhotoBrowser */,
-				42F4B0221DF79E1800501D70 /* RSKImageCropper.framework */,
 				0EC5C06F1BD0041F00E34E80 /* ReactiveCocoa.framework */,
 				4220FE821BC60DF40026460B /* MWPhotoBrowser.bundle */,
 				4220FE4A1BC60D540026460B /* SDWebImage */,
