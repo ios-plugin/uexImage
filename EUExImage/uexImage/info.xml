@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <uexplugins>
-    <plugin uexName="uexImage" version="4.0.4.1" build="4.1">
-        <info>4.1:openBrower style为1新样式 openPicker Style为1新样式</info>
+    <plugin uexName="uexImage" version="4.0.6" build="6">
+        <info>6:openPicker style样式为1 回调参数修改为对象</info>
+        <build>5:openBrower style为1新样式 openPicker Style为1新样式</build>
         <build>4:4.0图片压缩接口回调参数定义</build>
         <build>3:图片压缩</build>
     	<build>2:优化加载网络图片的进度条; 回调修正,和文档保持一致</build>

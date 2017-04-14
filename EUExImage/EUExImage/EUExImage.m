@@ -413,7 +413,7 @@ NSString * const cUexImageCallbackIsSuccessKey      = @"isSuccess";
     
     UEX_ERROR error;
     
-    [self.webViewEngine callbackWithFunctionKeyPath:@"uexImage.onPickerClosed" arguments:ACArgsPack(dict.ac_JSONFragment)];
+    [self.webViewEngine callbackWithFunctionKeyPath:@"uexImage.onPickerClosed" arguments:ACArgsPack(dict)];
     
     error = kUexNoError;
     
@@ -424,7 +424,6 @@ NSString * const cUexImageCallbackIsSuccessKey      = @"isSuccess";
 #pragma mark -compressImage(图片压缩)；
 
 - (void)compressImage:(NSMutableArray*)inArguments{
-    
     
     ACArgsUnpack(NSDictionary *info,ACJSFunctionRef *cb) = inArguments;
     NSString * imagePath = [self absPath:[info objectForKey:@"srcPath"]];
