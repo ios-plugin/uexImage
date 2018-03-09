@@ -351,11 +351,23 @@ NSString * const cUexImageCallbackIsSuccessKey      = @"isSuccess";
     return [wgtTempPath stringByAppendingPathComponent:@"uexImage"];
 }
 
+- (UIImage *)normalizedImage:(UIImage *)image {
+    if (image.imageOrientation == UIImageOrientationUp) return image;
+    
+    UIGraphicsBeginImageContextWithOptions(image.size, NO, image.scale);
+    [image drawInRect:(CGRect){0, 0, image.size}];
+    UIImage *normalizedImage = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return normalizedImage;
+}
+
 // save to Disk
 - (NSString *)saveImage:(UIImage *)image quality:(CGFloat)quality usePng:(BOOL)usePng{
     NSData *imageData;
     NSString *imageSuffix;
     
+    image = [self normalizedImage:image];
+
     if(usePng){
         imageData = UIImagePNGRepresentation(image);
         imageSuffix = @"png";

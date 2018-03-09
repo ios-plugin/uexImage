@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <uexplugins>
-    <plugin uexName="uexImage" version="4.0.8" build="8">
-        <info>8: 移除新样式支持</info>
+    <plugin uexName="uexImage" version="4.0.9" build="9">
+        <info>9:相册中的图片保存到沙箱时，按照拍摄方向保存</info>
+        <build>8:移除新样式支持</build>
         <build>7:RAC依赖库更新</build>
         <build>6:openPicker style为1新样式回调参数改为对象</build>
         <build>5:openBrower style为1新样式 openPicker Style为1新样式</build>
