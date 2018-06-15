@@ -15,12 +15,15 @@
 
 
 #import <Photos/Photos.h>
-//#import "EUtility.h"
+#import "EUtility.h"
 #import <AssetsLibrary/AssetsLibrary.h>
 #import <MediaPlayer/MediaPlayer.h>
 
 
 #import <Photos/PhotosTypes.h>
+#import "NSObject+SBJSON.h"
+#import "NSString+SBJSON.h"
+
 
 
 NSString * const cUexImageCallbackIsCancelledKey    = @"isCancelled";
@@ -256,29 +259,73 @@ NSString * const cUexImageCallbackIsSuccessKey      = @"isSuccess";
 
 
 
+//- (void)saveToPhotoAlbum:(NSMutableArray *)inArguments{
+//
+//    ACArgsUnpack(NSDictionary *info,ACJSFunctionRef *cb) = inArguments;
+//    NSString *path = stringArg(info[@"localPath"]);
+//    NSString *extra = stringArg(info[@"extraInfo"]);
+//    UIImage *image = [UIImage imageWithContentsOfFile:[self absPath:path]];
+//
+//    ALAssetsLibrary *library = [[ALAssetsLibrary alloc]init];
+//    [library writeImageToSavedPhotosAlbum:image.CGImage orientation:(ALAssetOrientation)[image imageOrientation] completionBlock:^(NSURL *assetURL, NSError *error) {
+//        NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+//        [dict setValue:extra forKey:@"extraInfo"];
+//        UEX_ERROR err = kUexNoError;
+//        if(error){
+//            err = uexErrorMake(1,[error localizedDescription]);
+//            [dict setValue:@(NO) forKey:cUexImageCallbackIsSuccessKey];
+//            [dict setValue:[error localizedDescription] forKey:@"errorStr"];
+//        }else{
+//            [dict setValue:@(YES) forKey:cUexImageCallbackIsSuccessKey];
+//        }
+//        [self.webViewEngine callbackWithFunctionKeyPath:@"uexImage.cbSaveToPhotoAlbum" arguments:ACArgsPack(dict.ac_JSONFragment)];
+//        [cb executeWithArguments:ACArgsPack(err,error.localizedDescription)];
+//    }];
+//
+//}
+
 - (void)saveToPhotoAlbum:(NSMutableArray *)inArguments{
+    if([inArguments count] < 1){
+        return;
+    }
+    id info = [inArguments[0] JSONValue];
+    if(!info || ![info isKindOfClass:[NSDictionary class]]||![info objectForKey:@"localPath"]){
+        return;
+    }
     
-    ACArgsUnpack(NSDictionary *info,ACJSFunctionRef *cb) = inArguments;
-    NSString *path = stringArg(info[@"localPath"]);
-    NSString *extra = stringArg(info[@"extraInfo"]);
-    UIImage *image = [UIImage imageWithContentsOfFile:[self absPath:path]];
+    //照片权限检测
+    BOOL isPicOK = [self judgePic];
+    if (!isPicOK) {
+        NSDictionary *dicResult = [NSDictionary dictionaryWithObjectsAndKeys:@"1",@"errCode",@"获取照片失败，请在 设置-隐私-照片 中开启权限",@"info", nil];
+        NSString *dataStr = [dicResult JSONFragment];
+        NSString *jsStr = [NSString stringWithFormat:@"if(uexImage.onPermissionDenied){uexImage.onPermissionDenied(%@)}",dataStr];
+        //回调给当前网页
+        [EUtility brwView:self.meBrwView evaluateScript:jsStr];
+        return;
+    }
     
-    ALAssetsLibrary *library = [[ALAssetsLibrary alloc]init];
-    [library writeImageToSavedPhotosAlbum:image.CGImage orientation:(ALAssetOrientation)[image imageOrientation] completionBlock:^(NSURL *assetURL, NSError *error) {
-        NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-        [dict setValue:extra forKey:@"extraInfo"];
-        UEX_ERROR err = kUexNoError;
-        if(error){
-            err = uexErrorMake(1,[error localizedDescription]);
-            [dict setValue:@(NO) forKey:cUexImageCallbackIsSuccessKey];
-            [dict setValue:[error localizedDescription] forKey:@"errorStr"];
-        }else{
-            [dict setValue:@(YES) forKey:cUexImageCallbackIsSuccessKey];
-        }
-        [self.webViewEngine callbackWithFunctionKeyPath:@"uexImage.cbSaveToPhotoAlbum" arguments:ACArgsPack(dict.ac_JSONFragment)];
-        [cb executeWithArguments:ACArgsPack(err,error.localizedDescription)];
-    }];
+    UIImage *image=[UIImage imageWithContentsOfFile:[self absPath:[info objectForKey:@"localPath"]]];
+    UIImageWriteToSavedPhotosAlbum(image, self, @selector(image:didFinishSavingWithError:contextInfo:), (__bridge_retained void * _Nullable)([info objectForKey:@"extraInfo"]));
+}
+
+
+
+- (void)image:(UIImage *)image didFinishSavingWithError:(NSError *)error contextInfo:(void *)contextInfo{
+    NSMutableDictionary *dict=[NSMutableDictionary dictionary];
     
+    id extraInfo =CFBridgingRelease(contextInfo);
+    
+    if([extraInfo isKindOfClass:[NSString class]]){
+        [dict setValue:extraInfo forKey:@"extraInfo"];
+    }
+    
+    if(error){
+        [dict setValue:@(NO) forKey:cUexImageCallbackIsSuccessKey];
+        [dict setValue:[error localizedDescription] forKey:@"errorStr"];
+    }else{
+        [dict setValue:@(YES) forKey:cUexImageCallbackIsSuccessKey];
+    }
+    [self callbackJsonWithName:@"cbSaveToPhotoAlbum" Object:dict];
 }
 
 
@@ -401,6 +448,102 @@ NSString * const cUexImageCallbackIsSuccessKey      = @"isSuccess";
     
 }
 
+
+#pragma mark - 照片权限判断
+- (BOOL)judgePic
+{
+    self.isJudgePic = NO;
+    PHAuthorizationStatus authStatus = [PHPhotoLibrary authorizationStatus];
+    switch (authStatus) {
+        case PHAuthorizationStatusNotDetermined://没有询问是否开启照片
+        {
+            //            __weak EUExImage *weakSelf = self;
+            //            //第一次询问用户是否进行授权
+            //            [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
+            //                // CALL YOUR METHOD HERE - as this assumes being called only once from user interacting with permission alert!
+            //                if (status == PHAuthorizationStatusAuthorized) {
+            //                    // Photo enabled code
+            //                    weakSelf.isJudgePic = YES;
+            //                }
+            //                else {
+            //                    // Photo disabled code
+            //                    weakSelf.isJudgePic = NO;
+            //                }
+            //            }];
+            self.isJudgePic = YES;
+        }
+        break;
+        case PHAuthorizationStatusRestricted:
+        //未授权，家长限制
+        self.isJudgePic = NO;
+        break;
+        case PHAuthorizationStatusDenied:
+        //用户未授权
+        self.isJudgePic = NO;
+        break;
+        case PHAuthorizationStatusAuthorized:
+        //用户授权
+        self.isJudgePic = YES;
+        break;
+        default:
+        break;
+    }
+    
+    return self.isJudgePic;
+}
+
+// js call back
+- (void)callbackJsonWithName:(NSString *)name Object:(id)obj{
+    
+    //    NSMutableArray * PickerImageArray = [[NSMutableArray alloc]initWithCapacity:3];
+    //    NSMutableDictionary * PickerDict = [NSMutableDictionary dictionaryWithCapacity:3];
+    NSString *result=nil;
+    
+    if([obj isKindOfClass:[NSString class]]){
+        
+        result=(NSString *)obj;
+        
+    } else {
+        
+        //        NSMutableDictionary * dictdd = (NSMutableDictionary*) obj;
+        //
+        //        if([[dictdd allKeys] containsObject:@"data"]) {
+        //            NSDictionary * dict = (NSDictionary*)obj;
+        //
+        //            NSArray * imageArray = [dict objectForKey:@"data"];
+        //
+        //            for (int i = 0; i<imageArray.count; i++)
+        //            {
+        //                UIImage * pickerImage = [UIImage imageWithContentsOfFile:[imageArray objectAtIndex:i]];
+        //
+        //                CGSize Pickerside = pickerImage.size;
+        //
+        //                PickerDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:[NSString stringWithFormat:@"%f",Pickerside.width],@"width", [NSString stringWithFormat:@"%f",Pickerside.height],@"height", nil];
+        //
+        //                [PickerImageArray addObject:PickerDict];
+        //            }
+        //
+        //            [dictdd setObject:PickerImageArray forKey:@"imageSize"];
+        //
+        //            result = [dictdd JSONFragment];
+        //
+        //             NSLog(@"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++%@",result);
+        //
+        //        }else{
+        
+        result = [obj JSONFragment];
+        
+        //        }
+        
+    }
+    
+    NSString const * pluginName=@"uexImage";
+    
+    NSString *jsStr = [NSString stringWithFormat:@"if(%@.%@ != null){%@.%@('%@');}",pluginName,name,pluginName,name,result];
+    
+    [EUtility brwView:self.meBrwView evaluateScript:jsStr];
+    
+}
 
 
 @end

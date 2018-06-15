@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <uexplugins>
-    <plugin uexName="uexImage" version="4.0.9" build="9">
+    <plugin uexName="uexImage" version="4.0.10" build="10">
+        <info>10:添加长按保存到相册</info>
         <info>9:相册中的图片保存到沙箱时，按照拍摄方向保存</info>
         <build>8:移除新样式支持</build>
         <build>7:RAC依赖库更新</build>
