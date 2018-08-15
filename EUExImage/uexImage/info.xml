@@ -1,8 +1,11 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <uexplugins>
-    <plugin uexName="uexImage" version="4.0.10" build="10">
-        <info>10:添加长按保存到相册</info>
-        <info>9:相册中的图片保存到沙箱时，按照拍摄方向保存</info>
+    <plugin uexName="uexImage" version="4.0.13" build="13">
+        <info>13:压缩图片大小bug修改</info>
+        <build>12:压缩图片大小</build>
+        <build>11:压缩图片失真</build>
+        <build>10:添加长按保存到相册</build>
+        <build>9:相册中的图片保存到沙箱时，按照拍摄方向保存</build>
         <build>8:移除新样式支持</build>
         <build>7:RAC依赖库更新</build>
         <build>6:openPicker style为1新样式回调参数改为对象</build>

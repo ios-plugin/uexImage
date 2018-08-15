@@ -112,8 +112,17 @@ NSString * const cUexImageCallbackIsSuccessKey      = @"isSuccess";
     NSString * imagePath = [self absPath:[info objectForKey:@"srcPath"]];
     UIImage * image = [UIImage imageWithContentsOfFile:imagePath];
     
-    //图像压缩
-    UIImage *images = [self scaleFromImage:image];
+    NSString * desLengthStr = [NSString stringWithFormat:@"%@",info[@"desLength"]];
+    NSInteger deslength = 0;
+    UIImage *images;
+    if (desLengthStr.length >0) {
+        deslength = [desLengthStr integerValue];
+        //图像压缩
+        images = [self scaleFromImage:image withDesLength:deslength];
+    }else{
+        //图像压缩
+        images = [self scaleFromImage:image];
+    }
     NSInteger imageLength = [[info objectForKey:@"desLength"] intValue];
     // 原始数据
     NSData *imgData = UIImageJPEGRepresentation(images, 1.0);
@@ -140,13 +149,13 @@ NSString * const cUexImageCallbackIsSuccessKey      = @"isSuccess";
         [imgData writeToFile:imgTmpPath atomically:YES];
         NSMutableDictionary * dicct = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"ok",@"status",imgTmpPath,@"filePath", nil];
         [self.webViewEngine callbackWithFunctionKeyPath:@"uexImage.cbCompressImage" arguments:ACArgsPack(dicct.ac_JSONFragment)];
-        errs = kUexNoError;
+        errs = @([@"1" integerValue]);
         
         [cb executeWithArguments:ACArgsPack(errs,dicct.ac_JSONFragment)];
         
     } else {
         NSMutableDictionary * dicct = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"fail",@"status",@"",@"filePath", nil];
-        errs = @([@"1" integerValue]);
+        errs = @([@"0" integerValue]);
         [self.webViewEngine callbackWithFunctionKeyPath:@"uexImage.cbCompressImage" arguments:ACArgsPack(dicct.ac_JSONFragment)];
         [cb executeWithArguments:ACArgsPack(errs,dicct.ac_JSONFragment)];
         
@@ -191,10 +200,70 @@ NSString * const cUexImageCallbackIsSuccessKey      = @"isSuccess";
     else if (dataSize<=2000)//小于2M
     {
         size = CGSizeMake(width/3.f, height/3.f);
+    }else if (dataSize<=5000)//小于2M
+    {
+        size = CGSizeMake(width/3.f, height/3.f);
+    }
+    else//大于5M
+    {
+        size = CGSizeMake(width/2.5f, height/2.5f);
+    }
+    UIGraphicsBeginImageContext(size);
+    [image drawInRect:CGRectMake(0,0, size.width, size.height)];
+    UIImage *newImage =UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    if (!newImage)
+    {
+        return image;
+    }
+    return newImage;
+}
+
+
+// 图像压缩
+//==========================
+- (UIImage *)scaleFromImage:(UIImage *)image withDesLength:(NSInteger )desLength
+{
+    if (!image){
+        return nil;
+    }
+    
+    NSData *data = UIImagePNGRepresentation(image);
+    CGFloat dataSize = data.length/1024;
+    CGFloat desSize = desLength/1024;
+    CGFloat bili =dataSize/desSize;
+    double val = sqrt(bili);
+    CGFloat width  = image.size.width;
+    CGFloat height = image.size.height;
+    CGSize size;
+    
+    if (dataSize<=30)//小于50k
+    {
+        return image;
+    }
+    else if (dataSize<=100)//小于100k
+    {
+        size = CGSizeMake(width/2.f, height/2.f);
+    }
+    else if (dataSize<=200)//小于200k
+    {
+        size = CGSizeMake(width/3.f, height/3.f);
+    }
+    else if (dataSize<=500)//小于500k
+    {
+        size = CGSizeMake(width/3.f, height/3.f);
+    }
+    else if (dataSize<=1000)//小于1M
+    {
+        size = CGSizeMake(width/3.f, height/3.f);
+    }
+    else if (dataSize<=2000)//小于2M
+    {
+        size = CGSizeMake(width/3.f, height/3.f);
     }
     else//大于2M
     {
-        size = CGSizeMake(width/20.f, height/20.f);
+        size = CGSizeMake(width/val, height/val);
     }
     UIGraphicsBeginImageContext(size);
     [image drawInRect:CGRectMake(0,0, size.width, size.height)];
@@ -288,7 +357,7 @@ NSString * const cUexImageCallbackIsSuccessKey      = @"isSuccess";
     if([inArguments count] < 1){
         return;
     }
-    id info = [inArguments[0] JSONValue];
+    ACArgsUnpack(NSDictionary *info,ACJSFunctionRef *cb) = inArguments;
     if(!info || ![info isKindOfClass:[NSDictionary class]]||![info objectForKey:@"localPath"]){
         return;
     }
