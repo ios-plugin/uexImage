@@ -15,12 +15,15 @@
 
 
 #import <Photos/Photos.h>
-//#import "EUtility.h"
+#import "EUtility.h"
 #import <AssetsLibrary/AssetsLibrary.h>
 #import <MediaPlayer/MediaPlayer.h>
 
 
 #import <Photos/PhotosTypes.h>
+#import "NSObject+SBJSON.h"
+#import "NSString+SBJSON.h"
+
 
 
 NSString * const cUexImageCallbackIsCancelledKey    = @"isCancelled";
@@ -109,17 +112,46 @@ NSString * const cUexImageCallbackIsSuccessKey      = @"isSuccess";
     NSString * imagePath = [self absPath:[info objectForKey:@"srcPath"]];
     UIImage * image = [UIImage imageWithContentsOfFile:imagePath];
     
-    //图像压缩
-    UIImage *images = [self scaleFromImage:image];
+    NSString * desLengthStr = [NSString stringWithFormat:@"%@",info[@"desLength"]];
+    NSInteger deslength = 0;
+    UIImage *images;
+    if (desLengthStr.length >0) {
+        deslength = [desLengthStr integerValue];
+        //图像压缩
+        images = [self scaleFromImage:image withDesLength:deslength];
+    }else{
+        //图像压缩
+        images = [self scaleFromImage:image];
+    }
     NSInteger imageLength = [[info objectForKey:@"desLength"] intValue];
     // 原始数据
-    NSData *imgData = UIImageJPEGRepresentation(images, 1.0);
-    // 原始图片
+    NSData *imgData = UIImagePNGRepresentation(images);
+//    NSData *imgData2 = UIImageJPEGRepresentation(images, 1.0);
+//
+//
+//    // 原始图片
     UIImage *result = [UIImage imageWithData:imgData];
     
-    if  (imgData.length > imageLength) {
-        imgData = UIImageJPEGRepresentation(result,0.5);
-    }
+//    if  (imgData.length > imageLength) {
+//        //二次压缩
+//        //微调
+//        NSInteger compressCount = 0;
+//
+//        imgData = UIImageJPEGRepresentation(result,0.5);
+//        
+//        while (imgData.length > imageLength) {
+//            
+//            /* 再次压缩的比例**/
+//            
+//            images = [self scaleFromImage:images withDesLength:deslength];
+//            imgData = UIImagePNGRepresentation(images);
+//            /*防止进入死循环**/
+//            compressCount ++;
+//            if (compressCount == 1) {
+//                break;
+//            }
+//        }
+//    }
     
     UEX_ERROR errs ;
     if(imgData){
@@ -137,13 +169,13 @@ NSString * const cUexImageCallbackIsSuccessKey      = @"isSuccess";
         [imgData writeToFile:imgTmpPath atomically:YES];
         NSMutableDictionary * dicct = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"ok",@"status",imgTmpPath,@"filePath", nil];
         [self.webViewEngine callbackWithFunctionKeyPath:@"uexImage.cbCompressImage" arguments:ACArgsPack(dicct.ac_JSONFragment)];
-        errs = kUexNoError;
+        errs = @([@"1" integerValue]);
         
         [cb executeWithArguments:ACArgsPack(errs,dicct.ac_JSONFragment)];
         
     } else {
         NSMutableDictionary * dicct = [NSMutableDictionary dictionaryWithObjectsAndKeys:@"fail",@"status",@"",@"filePath", nil];
-        errs = @([@"1" integerValue]);
+        errs = @([@"0" integerValue]);
         [self.webViewEngine callbackWithFunctionKeyPath:@"uexImage.cbCompressImage" arguments:ACArgsPack(dicct.ac_JSONFragment)];
         [cb executeWithArguments:ACArgsPack(errs,dicct.ac_JSONFragment)];
         
@@ -188,11 +220,50 @@ NSString * const cUexImageCallbackIsSuccessKey      = @"isSuccess";
     else if (dataSize<=2000)//小于2M
     {
         size = CGSizeMake(width/3.f, height/3.f);
-    }
-    else//大于2M
+    }else if (dataSize<=5000)//小于2M
     {
-        size = CGSizeMake(width/20.f, height/20.f);
+        size = CGSizeMake(width/3.f, height/3.f);
     }
+    else//大于5M
+    {
+        size = CGSizeMake(width/2.5f, height/2.5f);
+    }
+    UIGraphicsBeginImageContext(size);
+    [image drawInRect:CGRectMake(0,0, size.width, size.height)];
+    UIImage *newImage =UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    if (!newImage)
+    {
+        return image;
+    }
+    return newImage;
+}
+
+
+// 图像压缩
+//==========================
+- (UIImage *)scaleFromImage:(UIImage *)image withDesLength:(NSInteger )desLength
+{
+    if (!image){
+        return nil;
+    }
+    
+    NSData *data = UIImagePNGRepresentation(image);
+    CGFloat dataSize = data.length/1024;
+    CGFloat desSize = desLength/1024;
+    CGFloat bili =desSize/dataSize;
+    //图片小于指定大小，不执行压缩处理
+    if (bili > 1){
+        return image;
+    }
+    double val = sqrt(bili);
+    CGFloat width  = image.size.width;
+    CGFloat height = image.size.height;
+    CGSize size;
+    
+
+    size = CGSizeMake(width*val, height*val);
+    
     UIGraphicsBeginImageContext(size);
     [image drawInRect:CGRectMake(0,0, size.width, size.height)];
     UIImage *newImage =UIGraphicsGetImageFromCurrentImageContext();
@@ -256,29 +327,73 @@ NSString * const cUexImageCallbackIsSuccessKey      = @"isSuccess";
 
 
 
+//- (void)saveToPhotoAlbum:(NSMutableArray *)inArguments{
+//
+//    ACArgsUnpack(NSDictionary *info,ACJSFunctionRef *cb) = inArguments;
+//    NSString *path = stringArg(info[@"localPath"]);
+//    NSString *extra = stringArg(info[@"extraInfo"]);
+//    UIImage *image = [UIImage imageWithContentsOfFile:[self absPath:path]];
+//
+//    ALAssetsLibrary *library = [[ALAssetsLibrary alloc]init];
+//    [library writeImageToSavedPhotosAlbum:image.CGImage orientation:(ALAssetOrientation)[image imageOrientation] completionBlock:^(NSURL *assetURL, NSError *error) {
+//        NSMutableDictionary *dict = [NSMutableDictionary dictionary];
+//        [dict setValue:extra forKey:@"extraInfo"];
+//        UEX_ERROR err = kUexNoError;
+//        if(error){
+//            err = uexErrorMake(1,[error localizedDescription]);
+//            [dict setValue:@(NO) forKey:cUexImageCallbackIsSuccessKey];
+//            [dict setValue:[error localizedDescription] forKey:@"errorStr"];
+//        }else{
+//            [dict setValue:@(YES) forKey:cUexImageCallbackIsSuccessKey];
+//        }
+//        [self.webViewEngine callbackWithFunctionKeyPath:@"uexImage.cbSaveToPhotoAlbum" arguments:ACArgsPack(dict.ac_JSONFragment)];
+//        [cb executeWithArguments:ACArgsPack(err,error.localizedDescription)];
+//    }];
+//
+//}
+
 - (void)saveToPhotoAlbum:(NSMutableArray *)inArguments{
-    
+    if([inArguments count] < 1){
+        return;
+    }
     ACArgsUnpack(NSDictionary *info,ACJSFunctionRef *cb) = inArguments;
-    NSString *path = stringArg(info[@"localPath"]);
-    NSString *extra = stringArg(info[@"extraInfo"]);
-    UIImage *image = [UIImage imageWithContentsOfFile:[self absPath:path]];
+    if(!info || ![info isKindOfClass:[NSDictionary class]]||![info objectForKey:@"localPath"]){
+        return;
+    }
     
-    ALAssetsLibrary *library = [[ALAssetsLibrary alloc]init];
-    [library writeImageToSavedPhotosAlbum:image.CGImage orientation:(ALAssetOrientation)[image imageOrientation] completionBlock:^(NSURL *assetURL, NSError *error) {
-        NSMutableDictionary *dict = [NSMutableDictionary dictionary];
-        [dict setValue:extra forKey:@"extraInfo"];
-        UEX_ERROR err = kUexNoError;
-        if(error){
-            err = uexErrorMake(1,[error localizedDescription]);
-            [dict setValue:@(NO) forKey:cUexImageCallbackIsSuccessKey];
-            [dict setValue:[error localizedDescription] forKey:@"errorStr"];
-        }else{
-            [dict setValue:@(YES) forKey:cUexImageCallbackIsSuccessKey];
-        }
-        [self.webViewEngine callbackWithFunctionKeyPath:@"uexImage.cbSaveToPhotoAlbum" arguments:ACArgsPack(dict.ac_JSONFragment)];
-        [cb executeWithArguments:ACArgsPack(err,error.localizedDescription)];
-    }];
+    //照片权限检测
+    BOOL isPicOK = [self judgePic];
+    if (!isPicOK) {
+        NSDictionary *dicResult = [NSDictionary dictionaryWithObjectsAndKeys:@"1",@"errCode",@"获取照片失败，请在 设置-隐私-照片 中开启权限",@"info", nil];
+        NSString *dataStr = [dicResult JSONFragment];
+        NSString *jsStr = [NSString stringWithFormat:@"if(uexImage.onPermissionDenied){uexImage.onPermissionDenied(%@)}",dataStr];
+        //回调给当前网页
+        [EUtility brwView:self.meBrwView evaluateScript:jsStr];
+        return;
+    }
     
+    UIImage *image=[UIImage imageWithContentsOfFile:[self absPath:[info objectForKey:@"localPath"]]];
+    UIImageWriteToSavedPhotosAlbum(image, self, @selector(image:didFinishSavingWithError:contextInfo:), (__bridge_retained void * _Nullable)([info objectForKey:@"extraInfo"]));
+}
+
+
+
+- (void)image:(UIImage *)image didFinishSavingWithError:(NSError *)error contextInfo:(void *)contextInfo{
+    NSMutableDictionary *dict=[NSMutableDictionary dictionary];
+    
+    id extraInfo =CFBridgingRelease(contextInfo);
+    
+    if([extraInfo isKindOfClass:[NSString class]]){
+        [dict setValue:extraInfo forKey:@"extraInfo"];
+    }
+    
+    if(error){
+        [dict setValue:@(NO) forKey:cUexImageCallbackIsSuccessKey];
+        [dict setValue:[error localizedDescription] forKey:@"errorStr"];
+    }else{
+        [dict setValue:@(YES) forKey:cUexImageCallbackIsSuccessKey];
+    }
+    [self callbackJsonWithName:@"cbSaveToPhotoAlbum" Object:dict];
 }
 
 
@@ -401,6 +516,102 @@ NSString * const cUexImageCallbackIsSuccessKey      = @"isSuccess";
     
 }
 
+
+#pragma mark - 照片权限判断
+- (BOOL)judgePic
+{
+    self.isJudgePic = NO;
+    PHAuthorizationStatus authStatus = [PHPhotoLibrary authorizationStatus];
+    switch (authStatus) {
+        case PHAuthorizationStatusNotDetermined://没有询问是否开启照片
+        {
+            //            __weak EUExImage *weakSelf = self;
+            //            //第一次询问用户是否进行授权
+            //            [PHPhotoLibrary requestAuthorization:^(PHAuthorizationStatus status) {
+            //                // CALL YOUR METHOD HERE - as this assumes being called only once from user interacting with permission alert!
+            //                if (status == PHAuthorizationStatusAuthorized) {
+            //                    // Photo enabled code
+            //                    weakSelf.isJudgePic = YES;
+            //                }
+            //                else {
+            //                    // Photo disabled code
+            //                    weakSelf.isJudgePic = NO;
+            //                }
+            //            }];
+            self.isJudgePic = YES;
+        }
+        break;
+        case PHAuthorizationStatusRestricted:
+        //未授权，家长限制
+        self.isJudgePic = NO;
+        break;
+        case PHAuthorizationStatusDenied:
+        //用户未授权
+        self.isJudgePic = NO;
+        break;
+        case PHAuthorizationStatusAuthorized:
+        //用户授权
+        self.isJudgePic = YES;
+        break;
+        default:
+        break;
+    }
+    
+    return self.isJudgePic;
+}
+
+// js call back
+- (void)callbackJsonWithName:(NSString *)name Object:(id)obj{
+    
+    //    NSMutableArray * PickerImageArray = [[NSMutableArray alloc]initWithCapacity:3];
+    //    NSMutableDictionary * PickerDict = [NSMutableDictionary dictionaryWithCapacity:3];
+    NSString *result=nil;
+    
+    if([obj isKindOfClass:[NSString class]]){
+        
+        result=(NSString *)obj;
+        
+    } else {
+        
+        //        NSMutableDictionary * dictdd = (NSMutableDictionary*) obj;
+        //
+        //        if([[dictdd allKeys] containsObject:@"data"]) {
+        //            NSDictionary * dict = (NSDictionary*)obj;
+        //
+        //            NSArray * imageArray = [dict objectForKey:@"data"];
+        //
+        //            for (int i = 0; i<imageArray.count; i++)
+        //            {
+        //                UIImage * pickerImage = [UIImage imageWithContentsOfFile:[imageArray objectAtIndex:i]];
+        //
+        //                CGSize Pickerside = pickerImage.size;
+        //
+        //                PickerDict = [NSMutableDictionary dictionaryWithObjectsAndKeys:[NSString stringWithFormat:@"%f",Pickerside.width],@"width", [NSString stringWithFormat:@"%f",Pickerside.height],@"height", nil];
+        //
+        //                [PickerImageArray addObject:PickerDict];
+        //            }
+        //
+        //            [dictdd setObject:PickerImageArray forKey:@"imageSize"];
+        //
+        //            result = [dictdd JSONFragment];
+        //
+        //             NSLog(@"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++%@",result);
+        //
+        //        }else{
+        
+        result = [obj JSONFragment];
+        
+        //        }
+        
+    }
+    
+    NSString const * pluginName=@"uexImage";
+    
+    NSString *jsStr = [NSString stringWithFormat:@"if(%@.%@ != null){%@.%@('%@');}",pluginName,name,pluginName,name,result];
+    
+    [EUtility brwView:self.meBrwView evaluateScript:jsStr];
+    
+}
 
 
 @end
