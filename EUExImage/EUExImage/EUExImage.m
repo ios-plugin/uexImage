@@ -125,13 +125,33 @@ NSString * const cUexImageCallbackIsSuccessKey      = @"isSuccess";
     }
     NSInteger imageLength = [[info objectForKey:@"desLength"] intValue];
     // 原始数据
-    NSData *imgData = UIImageJPEGRepresentation(images, 1.0);
-    // 原始图片
+    NSData *imgData = UIImagePNGRepresentation(images);
+//    NSData *imgData2 = UIImageJPEGRepresentation(images, 1.0);
+//
+//
+//    // 原始图片
     UIImage *result = [UIImage imageWithData:imgData];
     
-    if  (imgData.length > imageLength) {
-        imgData = UIImageJPEGRepresentation(result,0.5);
-    }
+//    if  (imgData.length > imageLength) {
+//        //二次压缩
+//        //微调
+//        NSInteger compressCount = 0;
+//
+//        imgData = UIImageJPEGRepresentation(result,0.5);
+//        
+//        while (imgData.length > imageLength) {
+//            
+//            /* 再次压缩的比例**/
+//            
+//            images = [self scaleFromImage:images withDesLength:deslength];
+//            imgData = UIImagePNGRepresentation(images);
+//            /*防止进入死循环**/
+//            compressCount ++;
+//            if (compressCount == 1) {
+//                break;
+//            }
+//        }
+//    }
     
     UEX_ERROR errs ;
     if(imgData){
@@ -231,40 +251,19 @@ NSString * const cUexImageCallbackIsSuccessKey      = @"isSuccess";
     NSData *data = UIImagePNGRepresentation(image);
     CGFloat dataSize = data.length/1024;
     CGFloat desSize = desLength/1024;
-    CGFloat bili =dataSize/desSize;
+    CGFloat bili =desSize/dataSize;
+    //图片小于指定大小，不执行压缩处理
+    if (bili > 1){
+        return image;
+    }
     double val = sqrt(bili);
     CGFloat width  = image.size.width;
     CGFloat height = image.size.height;
     CGSize size;
     
-    if (dataSize<=30)//小于50k
-    {
-        return image;
-    }
-    else if (dataSize<=100)//小于100k
-    {
-        size = CGSizeMake(width/2.f, height/2.f);
-    }
-    else if (dataSize<=200)//小于200k
-    {
-        size = CGSizeMake(width/3.f, height/3.f);
-    }
-    else if (dataSize<=500)//小于500k
-    {
-        size = CGSizeMake(width/3.f, height/3.f);
-    }
-    else if (dataSize<=1000)//小于1M
-    {
-        size = CGSizeMake(width/3.f, height/3.f);
-    }
-    else if (dataSize<=2000)//小于2M
-    {
-        size = CGSizeMake(width/3.f, height/3.f);
-    }
-    else//大于2M
-    {
-        size = CGSizeMake(width/val, height/val);
-    }
+
+    size = CGSizeMake(width*val, height*val);
+    
     UIGraphicsBeginImageContext(size);
     [image drawInRect:CGRectMake(0,0, size.width, size.height)];
     UIImage *newImage =UIGraphicsGetImageFromCurrentImageContext();

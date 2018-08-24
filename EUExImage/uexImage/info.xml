@@ -1,7 +1,12 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <uexplugins>
-    <plugin uexName="uexImage" version="4.0.13" build="13">
-        <info>13:压缩图片大小bug修改</info>
+    <plugin uexName="uexImage" version="4.0.18" build="18">
+        <info>18:压缩优化</info>
+        <info>17:压缩优化</info>
+        <build>16:压缩优化</build>
+        <build>15:压缩图片小于指定大小时，不压缩</build>
+        <build>14:压缩图片大小精确调整</build>
+        <build>13:压缩图片大小bug修改</build>
         <build>12:压缩图片大小</build>
         <build>11:压缩图片失真</build>
         <build>10:添加长按保存到相册</build>
