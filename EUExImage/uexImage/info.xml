@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <uexplugins>
-    <plugin uexName="uexImage" version="4.0.18" build="18">
-        <info>18:压缩优化</info>
-        <info>17:压缩优化</info>
+    <plugin uexName="uexImage" version="4.0.19" build="18">
+        <info>19:中化定制，为openPicker方法添加参数orginPicPath，保存ALAsset图片的路径</info>
+        <build>18:压缩优化</build>
+        <build>17:压缩优化</build>
         <build>16:压缩优化</build>
         <build>15:压缩图片小于指定大小时，不压缩</build>
         <build>14:压缩图片大小精确调整</build>

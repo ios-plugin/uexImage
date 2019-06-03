@@ -11,6 +11,8 @@
 #import "uexImageAlbumPickerController.h"
 #import <CoreLocation/CoreLocation.h>
 #import "MBProgressHUD.h"
+
+
 @interface uexImagePicker()<uexImagePhotoPickerDelegate>
 //@property (nonatomic,strong)QBImagePickerController *picker;
 @property uexImageAlbumPickerModel *model;
@@ -87,11 +89,19 @@
         for(ALAsset * asset in assets){
             ALAssetRepresentation *representation = [asset defaultRepresentation];
             UIImage * assetImage =[UIImage imageWithCGImage:[representation fullResolutionImage] scale:representation.scale orientation:(UIImageOrientation)representation.orientation];
+            
+            // assetUrl图片的url
+            NSString *assetUrl = [[[asset defaultRepresentation] url] absoluteString];
+            NSLog(@"asset里图片的url是 : %@", assetUrl);
+            
+      
             NSString * imagePath =[self.EUExImage saveImage:assetImage quality:self.quality usePng:self.usePng];
+            
             if(imagePath){
                 [dataArray addObject:imagePath];
                 if(detailedInfoArray){
                     NSMutableDictionary *info = [NSMutableDictionary dictionary];
+                    [info setValue:assetUrl forKey:@"orginPicPath"];
                     [info setValue:imagePath forKey:@"localPath"];
                     [info setValue:@((int)[[asset valueForProperty:ALAssetPropertyDate] timeIntervalSince1970]) forKey:@"timestamp"];
                     CLLocation *location=[asset valueForProperty:ALAssetPropertyLocation];
@@ -102,11 +112,7 @@
                     }
                     [detailedInfoArray addObject:info];
                 }
-                
-                
-                
             }
-            
         }
         [dict setValue:dataArray forKey:cUexImageCallbackDataKey];
         if(detailedInfoArray){
@@ -115,13 +121,11 @@
         UEXIMAGE_ASYNC_DO_IN_MAIN_QUEUE(^{[MBProgressHUD hideHUDForView:self.picker.view animated:YES];});
         [self.EUExImage dismissViewController:self.picker animated:YES completion:^{
             UEX_ERROR error = kUexNoError;
+            
             [self.EUExImage.webViewEngine callbackWithFunctionKeyPath:@"uexImage.onPickerClosed" arguments:ACArgsPack(dict.ac_JSONFragment)];
             [self.cb executeWithArguments:ACArgsPack(error,dict)];
             [self clean];
         }];
-        
-        
-        
     });
 }
 
