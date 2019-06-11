@@ -94,6 +94,10 @@
             NSString *assetUrl = [[[asset defaultRepresentation] url] absoluteString];
             NSLog(@"asset里图片的url是 : %@", assetUrl);
             
+            //获取照片名称
+            NSString *fileName = asset.defaultRepresentation.filename;
+            NSLog(@"获取照片名称 fileName ====== %@",fileName);
+            
       
             NSString * imagePath =[self.EUExImage saveImage:assetImage quality:self.quality usePng:self.usePng];
             
@@ -101,7 +105,7 @@
                 [dataArray addObject:imagePath];
                 if(detailedInfoArray){
                     NSMutableDictionary *info = [NSMutableDictionary dictionary];
-                    [info setValue:assetUrl forKey:@"orginPicPath"];
+                    [info setValue:fileName forKey:@"orginPicPath"];
                     [info setValue:imagePath forKey:@"localPath"];
                     [info setValue:@((int)[[asset valueForProperty:ALAssetPropertyDate] timeIntervalSince1970]) forKey:@"timestamp"];
                     CLLocation *location=[asset valueForProperty:ALAssetPropertyLocation];

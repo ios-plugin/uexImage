@@ -185,6 +185,8 @@ static CGFloat kMaskRectMinimumPadding = 20;
 
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary<NSString *,id> *)info{
     UEXIMAGE_ASYNC_DO_IN_GLOBAL_QUEUE(^{
+        NSURL *url = [info objectForKey:UIImagePickerControllerReferenceURL];
+        NSLog(@"url是=======%@",url);
         UIImage *checkImg= [info objectForKey:UIImagePickerControllerOriginalImage];
         self.imageToBeCropped=checkImg;
         [self.EUExImage dismissViewController:picker animated:YES completion:^{
